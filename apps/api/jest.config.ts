@@ -1,5 +1,5 @@
 export default {
-	displayName: 'leanchuck',
+	displayName: 'api',
 	preset: '../../jest.preset.js',
 	testEnvironment: 'node',
 	transform: {
@@ -9,5 +9,5 @@ export default {
 		],
 	},
 	moduleFileExtensions: ['ts', 'js', 'html'],
-	coverageDirectory: '../../coverage/apps/leanchuck',
+	coverageDirectory: '../../coverage/apps/api',
 };

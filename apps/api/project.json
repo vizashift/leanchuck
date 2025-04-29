@@ -1,7 +1,7 @@
 {
-	"name": "leanchuck",
+	"name": "api",
 	"$schema": "../../node_modules/nx/schemas/project-schema.json",
-	"sourceRoot": "apps/leanchuck/src",
+	"sourceRoot": "apps/api/src",
 	"projectType": "application",
 	"tags": [],
 	"targets": {
@@ -22,15 +22,15 @@
 			"defaultConfiguration": "development",
 			"dependsOn": ["build"],
 			"options": {
-				"buildTarget": "leanchuck:build",
+				"buildTarget": "api:build",
 				"runBuildTargetDependencies": false
 			},
 			"configurations": {
 				"development": {
-					"buildTarget": "leanchuck:build:development"
+					"buildTarget": "api:build:development"
 				},
 				"production": {
-					"buildTarget": "leanchuck:build:production"
+					"buildTarget": "api:build:production"
 				}
 			}
 		},
