@@ -1,0 +1,124 @@
+{
+	"name": "@leanchuck/core",
+	"version": "0.1.0",
+	"description": "Generic, configurable 80/20 (Pareto) analytics engine. Map any dataset's fields to an X/Y comparison and classify every data point into quads and quartiles.",
+	"license": "MIT",
+	"type": "module",
+	"sideEffects": false,
+	"keywords": [
+		"pareto",
+		"80/20",
+		"eighty-twenty",
+		"quadrant",
+		"quartile",
+		"analytics",
+		"metrics",
+		"abc-analysis",
+		"segmentation"
+	],
+	"engines": {
+		"node": ">=18"
+	},
+	"files": [
+		"dist"
+	],
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			},
+			"require": {
+				"types": "./dist/index.d.cts",
+				"default": "./dist/index.cjs"
+			}
+		},
+		"./math": {
+			"import": {
+				"types": "./dist/math/index.d.ts",
+				"default": "./dist/math/index.js"
+			},
+			"require": {
+				"types": "./dist/math/index.d.cts",
+				"default": "./dist/math/index.cjs"
+			}
+		},
+		"./pareto": {
+			"import": {
+				"types": "./dist/pareto/index.d.ts",
+				"default": "./dist/pareto/index.js"
+			},
+			"require": {
+				"types": "./dist/pareto/index.d.cts",
+				"default": "./dist/pareto/index.cjs"
+			}
+		},
+		"./quad": {
+			"import": {
+				"types": "./dist/quad/index.d.ts",
+				"default": "./dist/quad/index.js"
+			},
+			"require": {
+				"types": "./dist/quad/index.d.cts",
+				"default": "./dist/quad/index.cjs"
+			}
+		},
+		"./quartile": {
+			"import": {
+				"types": "./dist/quartile/index.d.ts",
+				"default": "./dist/quartile/index.js"
+			},
+			"require": {
+				"types": "./dist/quartile/index.d.cts",
+				"default": "./dist/quartile/index.cjs"
+			}
+		},
+		"./rollup": {
+			"import": {
+				"types": "./dist/rollup/index.d.ts",
+				"default": "./dist/rollup/index.js"
+			},
+			"require": {
+				"types": "./dist/rollup/index.d.cts",
+				"default": "./dist/rollup/index.cjs"
+			}
+		},
+		"./stats": {
+			"import": {
+				"types": "./dist/stats/index.d.ts",
+				"default": "./dist/stats/index.js"
+			},
+			"require": {
+				"types": "./dist/stats/index.d.cts",
+				"default": "./dist/stats/index.cjs"
+			}
+		},
+		"./package.json": "./package.json"
+	},
+	"scripts": {
+		"build": "tsup",
+		"dev": "tsup --watch",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:coverage": "vitest run --coverage",
+		"docs": "typedoc",
+		"docs:serve": "npx --yes serve docs",
+		"format": "prettier --write \"src/**/*.ts\"",
+		"format:check": "prettier --check \"src/**/*.ts\"",
+		"clean": "rm -rf dist docs",
+		"prepublishOnly": "npm run clean && npm run build"
+	},
+	"devDependencies": {
+		"@types/node": "^26.0.0",
+		"@vitest/coverage-v8": "^4.1.9",
+		"prettier": "^3.8.4",
+		"tsup": "^8.5.1",
+		"typedoc": "^0.28.19",
+		"typescript": "^6.0.3",
+		"vitest": "^4.1.9"
+	}
+}

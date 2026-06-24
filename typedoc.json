@@ -1,0 +1,24 @@
+{
+	"$schema": "https://typedoc.org/schema.json",
+	"entryPoints": [
+		"src/index.ts",
+		"src/math/index.ts",
+		"src/pareto/index.ts",
+		"src/quad/index.ts",
+		"src/quartile/index.ts",
+		"src/rollup/index.ts",
+		"src/stats/index.ts"
+	],
+	"out": "docs",
+	"name": "@leanchuck/core",
+	"readme": "README.md",
+	"includeVersion": true,
+	"categorizeByGroup": true,
+	"navigation": {
+		"includeCategories": true,
+		"includeGroups": true
+	},
+	"sort": ["source-order"],
+	"excludeInternal": true,
+	"excludePrivate": true
+}
