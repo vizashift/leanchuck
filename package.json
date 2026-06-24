@@ -3,8 +3,19 @@
 	"version": "0.1.0",
 	"description": "Generic, configurable 80/20 (Pareto) analytics engine. Map any dataset's fields to an X/Y comparison and classify every data point into quads and quartiles.",
 	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/vizashift/leanchuck.git"
+	},
+	"bugs": {
+		"url": "https://github.com/vizashift/leanchuck/issues"
+	},
+	"homepage": "https://github.com/vizashift/leanchuck#readme",
 	"type": "module",
 	"sideEffects": false,
+	"publishConfig": {
+		"access": "public"
+	},
 	"keywords": [
 		"pareto",
 		"80/20",

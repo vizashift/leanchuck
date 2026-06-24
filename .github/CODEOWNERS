@@ -1,0 +1,5 @@
+# Code owners are automatically requested for review on any matching PR.
+# Combined with "Require review from Code Owners" branch protection, nothing
+# merges without an owner's approval.
+
+* @vizashift
