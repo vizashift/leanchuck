@@ -1,102 +1,146 @@
-# LeanChuck
+# @leanchuck/core
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+A generic, configurable **80/20 (Pareto) analytics engine**. Point it at any
+dataset, map your fields to an **X / Y** comparison and a **value** to rank by,
+and it classifies every data point into **quads** and **quartiles** — the same
+methodology used for customer × product analysis, generalized for _any_ two
+dimensions.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+- **Generic** — works with any record shape via field-name or function accessors.
+- **Configurable** — the Pareto split defaults to an exact `0.8`, with an
+  optional buffer for "the 80% plus one more" style rules.
+- **Tree-shakeable** — pure ESM with `sideEffects: false`; import only what you
+  use, either from the root or from focused subpaths.
+- **Dual module format** — ships ESM + CommonJS with full TypeScript types.
+- **Tiny & dependency-free** — no runtime dependencies.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/nest?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+## Installation
 
-## Run tasks
-
-To run the dev server for your app, use:
-
-```sh
-npx nx serve api
+```bash
+npm install @leanchuck/core
 ```
 
-To create a production bundle:
+## Quick start
 
-```sh
-npx nx build api
+```ts
+import { analyze } from '@leanchuck/core';
+
+const invoices = [
+	{ customer: 'Acme', product: 'Widget', revenue: 500, cost: 300 },
+	{ customer: 'Acme', product: 'Gadget', revenue: 100, cost: 80 },
+	{ customer: 'Globex', product: 'Widget', revenue: 250, cost: 150 },
+	// ...
+];
+
+const result = analyze(invoices, {
+	x: 'customer', // the X dimension
+	y: 'product', // the Y dimension
+	value: 'revenue', // what to rank by gmail
+	metrics: { cost: 'cost' }, // extra sums to carry along
+	pareto: { threshold: 0.8 }, // exact 80/20 (the default)
+	quartile: 'rank', // 'rank' (NTILE) or 'value' (distribution)
+});
+
+result.x.entries[0]; // top customer, fully classified (class, quartile, share…)
+result.quadCounts[1]; // # of rows where both axes are "vital" (Q1)
+result.quadValues[4]; // summed revenue of the "trivial/trivial" quad (Q4)
+result.points; // every row tagged with its quad
 ```
 
-To see all available targets to run for a project, run:
+Accessors can be **field names** or **functions**, so nothing about your data's
+shape is assumed:
 
-```sh
-npx nx show project api
+```ts
+analyze(rows, {
+	x: (r) => `${r.region}/${r.rep}`,
+	y: 'sku',
+	value: (r) => r.units * r.price,
+});
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+## Concepts
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+| Term          | Meaning                                                                           |
+| ------------- | --------------------------------------------------------------------------------- |
+| **Pareto**    | Sort contributors high→low, walk the cumulative share, split `vital` / `trivial`. |
+| **Vital few** | Contributors within the threshold (the classic top ~80%).                         |
+| **Quad**      | Cross the X-axis class with the Y-axis class → quadrant `1`–`4`.                  |
+| **Quartile**  | Four equal groups, by rank (NTILE) or by where a value sits in the distribution.  |
 
-## Add new projects
+Quad matrix:
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+| Quad | X axis  | Y axis  |
+| ---- | ------- | ------- |
+| `1`  | vital   | vital   |
+| `2`  | vital   | trivial |
+| `3`  | trivial | vital   |
+| `4`  | trivial | trivial |
 
-Use the plugin's generator to create new projects.
+## Configuring the Pareto split
 
-To generate a new application, use:
+The split is fully configurable. The default is an **exact `0.8`** cutoff with
+no buffer. Add a buffer to nudge the boundary (e.g. "80% plus one more"):
 
-```sh
-npx nx g @nx/nest:app demo
+```ts
+analyze(rows, {
+	x: 'customer',
+	y: 'product',
+	value: 'revenue',
+	pareto: {
+		threshold: 0.8, // base cutoff (0–1)
+		buffer: 0.005, // effective cutoff becomes 0.805
+		alwaysIncludeTop: true, // largest contributor is always "vital"
+	},
+});
 ```
 
-To generate a new library, use:
+## Subpath imports
 
-```sh
-npx nx g @nx/node:lib mylib
+Everything is re-exported from the package root, but each module is also
+available as a focused, tree-shakeable subpath:
+
+```ts
+import { pareto, classifyPareto } from '@leanchuck/core/pareto';
+import { classifyQuad } from '@leanchuck/core/quad';
+import { quartileByRank } from '@leanchuck/core/quartile';
+import { rollup } from '@leanchuck/core/rollup';
+import { percentiles, summarize } from '@leanchuck/core/stats';
+import { roundTo, sumBy } from '@leanchuck/core/math';
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+| Subpath                    | Contents                                             |
+| -------------------------- | ---------------------------------------------------- |
+| `@leanchuck/core`          | Everything, incl. the high-level `analyze`.          |
+| `@leanchuck/core/pareto`   | Cumulative share + 80/20 classification.             |
+| `@leanchuck/core/quad`     | 2×2 quadrant classification.                         |
+| `@leanchuck/core/quartile` | Rank-based and value-based quartiles.                |
+| `@leanchuck/core/rollup`   | Aggregate a flat dataset into per-dimension entries. |
+| `@leanchuck/core/stats`    | Percentiles, median, summaries.                      |
+| `@leanchuck/core/math`     | Rounding, percentages, sums, means.                  |
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Building blocks
 
-## Set up CI!
+Prefer to compose it yourself? The primitives are exported directly:
 
-### Step 1
+```ts
+import { rollup, pareto, classifyQuad } from '@leanchuck/core';
 
-To connect to Nx Cloud, run the following command:
+const customers = rollup(invoices, { by: 'customer', value: 'revenue' });
+const ranked = pareto(customers, (c) => c.value, { threshold: 0.8 });
 
-```sh
-npx nx connect
+const top = ranked.items.filter((i) => i.class === 'vital');
 ```
 
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
+## Scripts
 
--   [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
--   [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
--   [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
--   [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+| Script               | Description                         |
+| -------------------- | ----------------------------------- |
+| `npm run build`      | Build ESM + CJS + types via `tsup`. |
+| `npm test`           | Run the `vitest` suite.             |
+| `npm run typecheck`  | Type-check without emitting.        |
+| `npm run docs`       | Generate API docs via `typedoc`.    |
+| `npm run docs:serve` | Serve the generated docs locally.   |
 
-### Step 2
+## License
 
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
-```
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
--   [Learn more about this workspace setup](https://nx.dev/nx-api/nest?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
--   [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
--   [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
--   [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-
--   [Discord](https://go.nx.dev/community)
--   [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
--   [Our Youtube channel](https://www.youtube.com/@nxdevtools)
--   [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+MIT
