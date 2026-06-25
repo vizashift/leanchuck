@@ -10,7 +10,7 @@
 	"bugs": {
 		"url": "https://github.com/vizashift/leanchuck/issues"
 	},
-	"homepage": "https://github.com/vizashift/leanchuck#readme",
+	"homepage": "https://docs.leanchuck.com",
 	"type": "module",
 	"sideEffects": false,
 	"publishConfig": {

@@ -14,6 +14,10 @@ dimensions.
 - **Dual module format** — ships ESM + CommonJS with full TypeScript types.
 - **Tiny & dependency-free** — no runtime dependencies.
 
+## Documentation
+
+Full API reference and guides: **[docs.leanchuck.com](https://docs.leanchuck.com)**
+
 ## Installation
 
 ```bash
